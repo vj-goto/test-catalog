@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: transcript-tester
+  description: Transcript-tester openapi specification
+spec:
+  type: openapi
+  owner: dois-backstage
+  lifecycle: production
+  definition:
+    $openapi: ./transcript-tester.yaml

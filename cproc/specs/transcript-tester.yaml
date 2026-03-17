@@ -1,0 +1,114 @@
+x-api-meta:
+  slack: '#cproc-pub'
+  audience: internal
+
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: Transcription Tester API
+  description: |
+    **Team:** Call Processing (CPROC)<br/>
+    **Audience Scope:** internal<br/>
+
+    This API allows to start transcription tests.
+
+servers:
+  - url: /v1
+
+paths:
+  /tests/post-call-transcription:
+    post:
+      summary: Start a transcription test using the post-call transcription.
+      description: |
+        This endpoint requests a transcription test using the post-call transcription service.
+        
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/TranscriptRequest"
+      responses:
+        '200':
+          description: Transcription processed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranscriptResponse'
+        "400":
+          $ref: "./../../common/specs/common.yaml#/components/responses/400"
+        "404":
+          $ref: "./../../common/specs/common.yaml#/components/responses/404"
+        "500":
+          $ref: "./../../common/specs/common.yaml#/components/responses/500"
+
+components:
+  schemas:
+    TranscriptRequest:
+      type: object
+      required:
+        - organization
+        - accountKey
+        - data
+      properties:
+        organization:
+          $ref: "#/components/schemas/OrganizationId"
+        accountKey:
+          $ref: "#/components/schemas/AccountKey"
+        data:
+          $ref: "#/components/schemas/TestData"
+        reference:
+          type: boolean
+          description: When set, indicates that this test results should become the new reference for future tests.
+          default: false
+    TranscriptResponse:
+      type: object
+      required:
+        - transcriptId
+        - fingerprint
+      properties:
+        transcriptId:
+          $ref: "#/components/schemas/TranscriptId"
+        fingerprint:
+          type: string
+          description: Fingerprint of the audio file (hex encoded)
+          example: "8de7b6624875ee928c69397f2c6adbaa53fc60396c2e56ca477c26e37c589453"
+    OrganizationId:
+      type: string
+      format: uuid
+      description: ID of the organization requesting the transcription
+      example: "01234567-89ab-cdef-0123-456789abcdef"
+    AccountKey:
+      type: string
+      description: Account key of the organization
+      example: 0123450123450123456
+    TranscriptId:
+      type: string
+      format: uuid
+      description: ID of the transcript
+      example: 03892102-eb32-8439-8efb-a98312996342
+    TestData:
+      type: object
+      description: |
+        Test data specifying audio and transcription sources. 
+        Either S3 paths (audioFilePath) OR local paths (localAudioFilePath) must be provided for audio.
+      properties:
+        audioFilePath:
+          description: Path in the S3 bucket of the audio file. Mutually exclusive with localAudioFilePath.
+          type: string
+          example: "common-voice/v1/en/common_voice_en_1234.wav"
+        localAudioFilePath:
+          description: Local file path in the container (e.g., after kubectl cp). Mutually exclusive with audioFilePath.
+          type: string
+          example: "/tmp/audio.wav"
+        transcriptionFilePath:
+          description: Path in the S3 bucket of the expected transcription file.
+          type: string
+          example: "common-voice/v1/en/common_voice_en_1234.txt"
+        metadata:
+          $ref: "#/components/schemas/TestMetadata"
+    TestMetadata:
+      type: object
+      properties:
+        language:
+          description: Language of the audio content.
+          type: string

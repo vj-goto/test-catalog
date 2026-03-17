@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: monorepo-test-backstage
+  description: The is a monorepo
+spec:
+  targets:
+  - ./cproc/catalog-info.yaml
+

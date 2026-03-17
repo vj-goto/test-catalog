@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: cproc-resources
+  description: CPROC resources
+spec:
+  targets:
+    - ./specs/catalog-info.yaml

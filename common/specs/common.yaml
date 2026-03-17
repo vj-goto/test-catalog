@@ -1,0 +1,183 @@
+openapi: 3.0.0
+info:
+  description: |
+    Common definitions used throughout  APIs.
+  version: 2.0.0
+  title:  API Standard V2 Common Definitions
+  contact:
+    name: api@.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+paths: { }
+components:
+  parameters:
+    page:
+      name: page
+      in: query
+      description: Zero-based integer representing the page desired
+      required: false
+      schema:
+        type: integer
+        format: int32
+        default: 0
+    pageSize:
+      name: pageSize
+      in: query
+      description: Maximum number of items returned in a page
+      required: false
+      schema:
+        type: integer
+        format: int32
+        default: 10
+    pageMarker:
+      name: pageMarker
+      in: query
+      description: The opaque identifier representing a valid marker for the desired page.
+        Default to first page when not provided.
+      required: false
+      schema:
+        type: string
+    externalUserId:
+      name: externalUserId
+      in: path
+      description: This is the email of the specified user.
+      required: true
+      schema:
+        type: string
+    organizationId:
+      in: query
+      name: organizationId
+      description: ID of the organization
+      example: 0127d974-f9f3-0704-2dee-000100422009
+      required: true
+      schema:
+        type: string
+        format: uuid
+    accountKey:
+      in: query
+      name: accountKey
+      description: >
+        Identifier of an Account in the Account Service.
+
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          example: "12345678"
+    userKey:
+      in: query
+      name: userKey
+      description: >
+        Identifier of a user. Can be found via the Admin API on the /accounts/.../users endpoint.
+      schema:
+        type: string
+    skipCounts:
+      name: skipCounts
+      in: query
+      description: >
+        Skip the calculation of `matchesTotal` and `total` values in order to speed up the response.
+
+      required: false
+      schema:
+        type: boolean
+        format: boolean
+        default: false
+  responses:
+    "400":
+      description: >
+        The request has one or more issues.  The API returns a number of
+        `errorCode` values in the response that provide additional details.  The response may contain one ore more
+        values in `constraintViolations` to provide additional details useful in debugging.
+
+        * BAD_REQUEST - The request is not valid.
+
+        * MALFORMED_REQUEST - The request is malformed and not interpretable.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/ConstraintViolationError"
+          example:
+            reference: jhkasdf89hjn3298fs
+            errorCode: BAD_REQUEST
+            constraintViolations:
+              - field: name
+                constraint: MAX_LENGTH
+    "404":
+      description: >
+        The specified resource does not exist or the requesting principal does
+        not have the ability to read or modify the specified resource.  A `NOT_FOUND` `errorCode` accompanies this
+        response.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            reference: jhkasdf89hjn3298fs
+            errorCode: NOT_FOUND
+            message: Not found.
+    "500":
+      description: >
+        An unknown error occurred. The API returns a number of `errorCode`
+        values in the response that provide additional details.
+
+        * `UNKNOWN_ERROR` - An unknown error occurred.
+
+        * `AUTHN_UNKNOWN` - An unknown error occurred.
+      content:
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            reference: jhkasdf89hjn3298fs
+            errorCode: UNKNOWN_ERROR
+            message: An unknown error occurred.
+
+  schemas:
+    ConstraintViolation:
+      type: object
+      required:
+        - field
+        - constraint
+      properties:
+        field:
+          type: string
+          description: Constraint violation target field name.
+        constraint:
+          type: string
+          description: A machine readable identifier of the constraint violation type.
+      example:
+        field: name
+        constraint: MAX_LENGTH
+    Error:
+      type: object
+      required:
+        - reference
+        - errorCode
+      properties:
+        reference:
+          type: string
+          description: A unique identifier used to lookup the error on internal systems.
+        errorCode:
+          type: string
+          description: A machine readable identifier of the error type.
+        message:
+          type: string
+          description: A human readable message describing the issue.
+      example:
+        reference: jhkasdf89hjn3298fs
+        errorCode: CONSTRAINT_VIOLATION
+        message: Invalid data was provided
+    ConstraintViolationError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - type: object
+          title: ConstraintViolationError
+          required:
+            - constraintViolations
+          properties:
+            constraintViolations:
+              type: array
+              items:
+                $ref: "#/components/schemas/ConstraintViolation"
