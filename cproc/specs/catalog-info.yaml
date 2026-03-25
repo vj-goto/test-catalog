@@ -8,5 +8,4 @@ spec:
   owner: dois-backstage
   lifecycle: production
   definition:
-    # $text: ./transcript-tester.yaml
     $openapi: ./transcript-tester.yaml
